@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -56,7 +57,7 @@ public class LambdaUploadBuildStepTest {
     @Mock
     private LambdaClientConfig clientConfig;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_MOCKS)
     private AWSLambdaClient lambdaClient;
 
     @Test

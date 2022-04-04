@@ -18,10 +18,12 @@ import java.nio.ByteBuffer;
 public class LambdaDeployService {
     private AWSLambdaClient client;
     private JenkinsLogger logger;
+    private WaitersHelper waitersHelper;
 
     public LambdaDeployService(AWSLambdaClient client, JenkinsLogger logger) {
         this.client = client;
         this.logger = logger;
+        this.waitersHelper = new WaitersHelper(client, logger);
     }
 
     /**
@@ -175,6 +177,8 @@ public class LambdaDeployService {
         CreateFunctionResult uploadFunctionResult = client.createFunction(createFunctionRequest);
         logger.log("Lambda create response:%n%s%n", uploadFunctionResult.toString());
 
+        waitersHelper.waitForFunctionToBecomeUsable(config.getFunctionName());
+
         return uploadFunctionResult.getVersion();
     }
 
@@ -187,6 +191,7 @@ public class LambdaDeployService {
         logger.log("Lambda create alias request:%n%s%n", createAliasRequest.toString());
         CreateAliasResult createAliasResponse = client.createAlias(createAliasRequest);
         logger.log("Lambda create alias response:%n%s%n", createAliasResponse.toString());
+        waitersHelper.waitForFunctionToBecomeUsable(config.getFunctionName());
     }
 
     private void updateLambdaAlias(DeployConfig config, String functionVersion) throws IOException {
@@ -197,6 +202,8 @@ public class LambdaDeployService {
 
         logger.log("Lambda update alias request:%n%s%n", updateAliasRequest.toString());
         UpdateAliasResult updateAliasResult = client.updateAlias(updateAliasRequest);
+
+        waitersHelper.waitForFunctionToBecomeUsable(config.getFunctionName());
         logger.log("Lambda update alias result:%n%s%n", updateAliasResult.toString());
     }
 
@@ -219,6 +226,7 @@ public class LambdaDeployService {
             logger.log("EventSource mapping request:%n%s%n", eventSourceMappingRequest.toString());
             CreateEventSourceMappingResult eventSourceMappingResult = client.createEventSourceMapping(eventSourceMappingRequest);
             logger.log("EventSource mapping response:%n%s%n", eventSourceMappingResult.toString());
+            waitersHelper.waitForFunctionToBecomeUsable(config.getFunctionName());
         } else {
             logger.log("Skipping EventSource mapping (already exists): " + config.getEventSourceArn());
         }
@@ -246,6 +254,9 @@ public class LambdaDeployService {
 
         UpdateFunctionCodeResult updateFunctionCodeResult = client.updateFunctionCode(updateFunctionCodeRequest);
         logger.log("Lambda update code response:%n%s%n", updateFunctionCodeResult.toString());
+
+        waitersHelper.waitForFunctionToBecomeUsable(functionName);
+
         return updateFunctionCodeResult.getVersion();
     }
 
@@ -280,6 +291,8 @@ public class LambdaDeployService {
 
         UpdateFunctionConfigurationResult updateFunctionConfigurationResult = client.updateFunctionConfiguration(updateFunctionConfigurationRequest);
         logger.log("Lambda update configuration response:%n%s%n", updateFunctionConfigurationResult.toString());
+
+        waitersHelper.waitForFunctionToBecomeUsable(config.getFunctionName());
         return updateFunctionConfigurationResult.getVersion();
     }
 

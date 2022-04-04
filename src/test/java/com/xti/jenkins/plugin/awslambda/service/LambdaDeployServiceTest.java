@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -71,7 +72,7 @@ public class LambdaDeployServiceTest {
     private Map<String, String> environment;
     private String deadLetterQueueArn;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_MOCKS)
     private AWSLambdaClient awsLambdaClient;
 
     @Mock
