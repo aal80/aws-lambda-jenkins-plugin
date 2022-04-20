@@ -8,6 +8,7 @@ import com.xti.jenkins.plugin.awslambda.exception.LambdaDeployException;
 import com.xti.jenkins.plugin.awslambda.upload.DeployConfig;
 import com.xti.jenkins.plugin.awslambda.upload.UpdateModeValue;
 import com.xti.jenkins.plugin.awslambda.util.LogUtils;
+import com.xti.jenkins.plugin.awslambda.util.WaitersHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
