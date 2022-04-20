@@ -1,11 +1,11 @@
-package com.xti.jenkins.plugin.awslambda.service;
+package com.xti.jenkins.plugin.awslambda.util;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.lambda.AWSLambdaClient;
 import com.amazonaws.services.lambda.model.GetFunctionConfigurationRequest;
-import com.amazonaws.services.lambda.model.GetFunctionRequest;
 import com.amazonaws.waiters.Waiter;
 import com.amazonaws.waiters.WaiterParameters;
+import com.xti.jenkins.plugin.awslambda.service.JenkinsLogger;
 
 import java.util.Date;
 
@@ -13,7 +13,6 @@ public class WaitersHelper {
     private final JenkinsLogger logger;
     private final AWSLambdaClient client;
 
-    private static final String FUNCTION_EXISTS = "Function Exists";
     private static final String FUNCTION_ACTIVE = "Function Active";
     private static final String FUNCTION_UPDATED = "Function Updated";
 
@@ -23,33 +22,13 @@ public class WaitersHelper {
     }
 
     public void waitForFunctionToBecomeUsable(String functionName) {
-        waitForFunctionToExist(functionName);
-        waitForFunctionToBeActive(functionName);
-        waitForFunctionUpdateToBeSuccessful(functionName);
-    }
+        WaiterParameters<GetFunctionConfigurationRequest> waiterParameters = new WaiterParameters<>(
+                new GetFunctionConfigurationRequest()
+                        .withFunctionName(functionName)
+        );
 
-    private void waitForFunctionToExist(String functionName) {
-        GetFunctionRequest getFunctionRequest = new GetFunctionRequest();
-        getFunctionRequest.withFunctionName(functionName);
-        WaiterParameters<GetFunctionRequest> waiterParameters = new WaiterParameters<GetFunctionRequest>(getFunctionRequest);
-        Waiter<GetFunctionRequest> waiter = client.waiters().functionExists();
-        runWaiter(waiter, FUNCTION_EXISTS, waiterParameters);
-    }
-
-    private void waitForFunctionToBeActive(String functionName) {
-        GetFunctionConfigurationRequest getFunctionConfigurationRequest = new GetFunctionConfigurationRequest();
-        getFunctionConfigurationRequest.withFunctionName(functionName);
-        WaiterParameters<GetFunctionConfigurationRequest> waiterParameters = new WaiterParameters<GetFunctionConfigurationRequest>(getFunctionConfigurationRequest);
-        Waiter<GetFunctionConfigurationRequest> waiter = client.waiters().functionActive();
-        runWaiter(waiter, FUNCTION_ACTIVE, waiterParameters);
-    }
-
-    private void waitForFunctionUpdateToBeSuccessful(String functionName) {
-        GetFunctionConfigurationRequest getFunctionConfigurationRequest = new GetFunctionConfigurationRequest();
-        getFunctionConfigurationRequest.withFunctionName(functionName);
-        WaiterParameters<GetFunctionConfigurationRequest> waiterParameters = new WaiterParameters<GetFunctionConfigurationRequest>(getFunctionConfigurationRequest);
-        Waiter<GetFunctionConfigurationRequest> waiter = client.waiters().functionUpdated();
-        runWaiter(waiter, FUNCTION_UPDATED, waiterParameters);
+        runWaiter(client.waiters().functionActive(), FUNCTION_ACTIVE, waiterParameters);
+        runWaiter(client.waiters().functionUpdated(), FUNCTION_UPDATED, waiterParameters);
     }
 
     private void runWaiter(Waiter waiter, String waiterDescription, WaiterParameters waiterParameters) {
